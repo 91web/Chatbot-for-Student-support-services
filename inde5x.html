@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Support Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .chatbot-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease-in-out;
+        }
+        .chat-header {
+            background: #3f51b5;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .chat-area {
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            border-top: 1px solid #ddd;
+        }
+        .user-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+        .user-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 0;
+            outline: none;
+        }
+        .user-input button {
+            background: #3f51b5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .user-input button:hover {
+            background: #303f9f;
+        }
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.5s;
+        }
+        .message.user {
+            text-align: right;
+        }
+        .message.bot {
+            text-align: left;
+        }
+        .message span {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 15px;
+        }
+        .message.user span {
+            background: #e0f7e4;
+        }
+        .message.bot span {
+            background: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chatbot-container animate__animated animate__fadeInUp">
+    <div class="chat-header">
+        Student Support Chatbot
+    </div>
+    <div class="chat-area" id="chatArea">
+        <!-- Messages will appear here -->
+    </div>
+    <div class="user-input">
+        <label for="userInput" class="visually-hidden">Type your message</label>
+        <input type="text" id="userInput" placeholder="Ask me anything..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    const chatArea = document.getElementById("chatArea");
+    const userInput = document.getElementById("userInput");
+
+    // Display messages in the chat area
+    function displayMessage(message, sender) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${sender} animate__animated animate__fadeIn`;
+        messageDiv.innerHTML = `<span>${message}</span>`;
+        chatArea.appendChild(messageDiv);
+        chatArea.scrollTop = chatArea.scrollHeight; // Auto-scroll to the latest message
+    }
+
+    // Fetch data from Wikipedia
+    async function fetchWikipedia(query) {
+        const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&list=search&srsearch=${encodeURIComponent(query)}`;
+
+        try {
+            const response = await fetch(searchUrl);
+            const data = await response.json();
+
+            if (data.query.search.length === 0) {
+                displayMessage("Sorry, I couldn't find any information on that topic. Please try rephrasing your query.", "bot");
+            } else {
+                const pageTitle = data.query.search[0].title;
+                const contentUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(pageTitle)}`;
+
+                const contentResponse = await fetch(contentUrl);
+                const contentData = await contentResponse.json();
+                const pages = contentData.query.pages;
+                const pageId = Object.keys(pages)[0];
+                const extract = pages[pageId].extract;
+
+                displayMessage(
+                    extract || `I found a page titled "${pageTitle}" but couldn't extract a detailed description.`,
+                    "bot"
+                );
+            }
+        } catch (error) {
+            displayMessage("An error occurred while fetching data. Please try again.", "bot");
+            console.error(error);
+        }
+    }
+
+    // Handle sending a message
+    function sendMessage() {
+        const query = userInput.value.trim();
+        if (!query) {
+            displayMessage("Please enter a message before sending.", "bot");
+            return;
+        }
+
+        displayMessage(query, "user");
+        fetchWikipedia(query);
+        userInput.value = ""; // Clear the input field
+    }
+</script>
+
+</body>
+</html>
