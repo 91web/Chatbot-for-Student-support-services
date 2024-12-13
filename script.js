@@ -2,7 +2,6 @@
     const chatArea = document.getElementById("chatArea");
     const userInput = document.getElementById("userInput");
 
-    // Display messages in the chat area
     function displayMessage(message, sender) {
         const messageDiv = document.createElement("div");
         messageDiv.className = `message ${sender}`;
@@ -23,7 +22,6 @@
         chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // Show typing indicator
     function showTypingIndicator() {
         const typingDiv = document.createElement("div");
         typingDiv.className = "typing-indicator";
@@ -32,7 +30,6 @@
         chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // Hide typing indicator
     function hideTypingIndicator() {
         const typingIndicator = document.querySelector(".typing-indicator");
         if (typingIndicator) {
@@ -40,7 +37,6 @@
         }
     }
 
-    // Fetch data from Wikipedia
     async function fetchWikipedia(query) {
         showTypingIndicator();
         const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&list=search&srsearch=${encodeURIComponent(query)}`;
@@ -75,20 +71,18 @@
         }
     }
 
-    // Handle sending a message
     function sendMessage() {
         const query = userInput.value.trim();
         if (!query) {
-            displayMessage("Please enter a message before sending.", "bot");
+            displayMessage("Please enter a question before sending.", "bot");
             return;
         }
 
         displayMessage(query, "user");
         fetchWikipedia(query);
-        userInput.value = ""; // Clear the input field
+        userInput.value = "";
     }
 
-    // Allow sending message with Enter key
     userInput.addEventListener("keypress", function(event) {
         if (event.key === "Enter") {
             event.preventDefault();
@@ -96,7 +90,6 @@
         }
     });
 
-    // Initial greeting
     setTimeout(() => {
-        displayMessage("Hello! I'm your enhanced student support chatbot with a beautiful deep wine design. How can I assist you today?", "bot");
+        displayMessage("Hello! I'm your mobile-friendly Student Support Chatbot services. How can I assist you today?", "bot");
     }, 500);
