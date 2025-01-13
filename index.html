@@ -4,26 +4,264 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Support Chatbot</title>
-    <link rel="stylesheet" href="./style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --vein-dark: #2c3e50;
+            --vein-medium: #34495e;
+            --vein-light: #ecf0f1;
+            --vein-accent: #e74c3c;
+        }
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--vein-light);
+            transition: background-color 0.5s ease;
+        }
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--vein-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--vein-light);
+            border-top: 5px solid var(--vein-accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 90vh;
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        #chat-header {
+            background-color: var(--vein-dark);
+            color: var(--vein-light);
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.2em;
+            border-bottom: 2px solid var(--vein-accent);
+        }
+        #chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--vein-light);
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 80%;
+            line-height: 1.4;
+            animation: fadeIn 0.5s ease;
+        }
+        .message-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .message-content p {
+            margin: 0 0 10px 0;
+        }
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+        .message-content ul, .message-content ol {
+            margin: 0 0 10px 0;
+            padding-left: 20px;
+        }
+        .message-content li {
+            margin-bottom: 5px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-message {
+            background-color: var(--vein-medium);
+            color: var(--vein-light);
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .bot-message {
+            background-color: white;
+            color: var(--vein-dark);
+            align-self: flex-start;
+            border: 1px solid var(--vein-medium);
+        }
+        #user-input {
+            display: flex;
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid var(--vein-medium);
+        }
+        #user-input input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid var(--vein-medium);
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        #user-input input:focus {
+            border-color: var(--vein-accent);
+        }
+        #user-input button {
+            padding: 12px 24px;
+            background-color: var(--vein-accent);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+        #user-input button:hover {
+            background-color: #c0392b;
+        }
+        #user-input button:active {
+            transform: scale(0.98);
+        }
+        .typing-indicator {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            float: left;
+            margin: 0 1px;
+            background-color: var(--vein-medium);
+            display: block;
+            border-radius: 50%;
+            opacity: 0.4;
+        }
+        .typing-indicator span:nth-of-type(1) {
+            animation: 1s blink infinite 0.3333s;
+        }
+        .typing-indicator span:nth-of-type(2) {
+            animation: 1s blink infinite 0.6666s;
+        }
+        .typing-indicator span:nth-of-type(3) {
+            animation: 1s blink infinite 0.9999s;
+        }
+        @keyframes blink {
+            50% {
+                opacity: 1;
+            }
+        }
+        #chat-footer {
+            background-color: var(--vein-dark);
+            color: var(--vein-light);
+            padding: 10px;
+            text-align: center;
+            font-size: 0.8em;
+            border-top: 2px solid var(--vein-accent);
+        }
+        @media (max-width: 768px) {
+            #chat-container {
+                height: 100vh;
+                border-radius: 0;
+            }
+        }
+    </style>
 </head>
 <body>
-     <div class="chatbot-container">
-         <div class="chat-header">
-                Chatbot Student Support Services
-        </div>
-        <div class="chat-area" id="chatArea">
-                <!-- Messages will appear here -->
-         </div>
-         <div class="user-input">
-                <input type="text" id="userInput" placeholder="Ask me anything..." />
-                <button onclick="sendMessage()">Send</button>
-        </div>
-    <div class="footer-wave"></div>
-    <div class="footer">
-        <p> All right reserved &copy; 2024 Chatbot for Student Support Services</p>
-        <p> <a href="#" target="_blank">Success Omolola Olagoke</a></p>
+    <div id="loading-screen">
+        <div class="loader"></div>
     </div>
-</div>
-<script src="./script.js"></script>
+    <div id="chat-container">
+        <div id="chat-header">Student Support Chatbot</div>
+        <div id="chat-messages"></div>
+        <div id="user-input">
+            <input type="text" id="message-input" placeholder="Type your message here...">
+            <button id="send-button">Send</button>
+        </div>
+        <div id="chat-footer"> All rights reserved © 2025 Student Support Services.|| Success Omolola Olagoke </div>
+    </div>
+    <script src="chatbot.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loading-screen').style.opacity = '0';
+                document.getElementById('loading-screen').style.visibility = 'hidden';
+                document.getElementById('chat-container').style.opacity = '1';
+                document.getElementById('chat-container').style.transform = 'translateY(0)';
+            }, 2000);
+        });
+
+        function addMessage(message, isUser = false) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(isUser ? 'user-message' : 'bot-message');
+            
+            const contentElement = document.createElement('div');
+            contentElement.classList.add('message-content');
+            contentElement.innerHTML = formatMessage(message);
+            
+            messageElement.appendChild(contentElement);
+            document.getElementById('chat-messages').appendChild(messageElement);
+            document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+        }
+
+        function formatMessage(message) {
+            // Convert line breaks to <br> tags
+            message = message.replace(/\n/g, '<br>');
+            
+            // Convert bullet points (both - and *) to unordered list
+            const bulletRegex = /(?:^|\n)([*-] .+)(?:\n|$)/g;
+            message = message.replace(bulletRegex, function(match, p1) {
+                return '<ul><li>' + p1.substring(2) + '</li></ul>';
+            });
+            
+            // Merge adjacent <ul> tags
+            message = message.replace(/<\/ul>\s*<ul>/g, '');
+            
+            // Wrap paragraphs
+            const paragraphs = message.split('<br><br>');
+            message = paragraphs.map(p => `<p>${p}</p>`).join('');
+            
+            return message;
+        }
+
+        // Example usage (you can remove this in production)
+        addMessage("Welcome to the Student Support Chatbot! How can I assist you today?\n\nHere are some topics I can help with:\n- Course registration\n- Financial aid\n- Campus events\n- Academic advising\n\nFeel free to ask me anything!", false);
+    </script>
 </body>
 </html>
+
