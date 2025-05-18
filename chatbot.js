@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function getBotResponse(message) {
-        const apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+        const apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
         
         const requestBody = {
             contents: [
